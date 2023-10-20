@@ -1,4 +1,5 @@
 import os
+from multiprocessing import Pool
 
 
 def is_similarity(file1, file2):
@@ -14,23 +15,44 @@ def is_similarity(file1, file2):
         if length1 == length2:
             return 100.0
         return 0.0
+    
+    if length1 < length2:
+        length1, length2 = length2, length1
+        content1, content2 = content2, content1
 
-    lcs = [[0 for i in range(length2 + 1)] for j in range(length1 + 1)]
+    lcs = [[0 for i in range(length2 + 1)] for j in range(2)]
     
     for i in range(1, length1 + 1):
         for j in range(1, length2 + 1):
             c1 = content1[i - 1]
             c2 = content2[j - 1]
             if c1 == c2:
-                lcs[i][j] = max(lcs[i][j], lcs[i - 1][j - 1] + 1)
-            lcs[i][j] = max(lcs[i][j], lcs[i - 1][j], lcs[i][j - 1])
+                lcs[1][j] = max(lcs[1][j], lcs[0][j - 1] + 1)
+            lcs[1][j] = max(lcs[1][j], lcs[0][j], lcs[1][j - 1])
 
-    return lcs[length1][length2] * 100.0 / max(length1, length2) 
-            
+        for j in range(length2 + 1):
+            lcs[0][j] = lcs[1][j]
+            lcs[1][j] = 0
+
+    return lcs[0][length2] * 100.0 / max(length1, length2) 
+
+
+def solve(first_path_directory, second_path_directory, similarity):
+    first_directory_files = [first_path_directory + '/' + file for file in os.listdir(first_path_directory)]
+    second_directory_files = [second_path_directory + '/' + file for file in os.listdir(second_path_directory)]
+
+    with Pool(20) as pool:
+        res = pool.starmap(is_similarity, [
+            (file1, file2)
+            for file1 in first_directory_files
+            for file2 in second_directory_files
+        ]) 
     
-    
-
-
+    for ind1, file1 in enumerate(first_directory_files):
+        for ind2, file2 in enumerate(second_directory_files):
+            cur_similarity = res[ind1 * len(second_directory_files) + ind2]
+            if cur_similarity >= similarity:
+                print(f"Файлы {file1} и {file2} похожи с коэффициентом сходства {cur_similarity:.1f}%")
 
 
 
@@ -39,16 +61,8 @@ first_path_directory = input('Введите путь до первой дире
 second_path_directory = input('Введите путь до второй директории: ')
 similarity = float(input('Введите параметр сходство: '))
 
-first_directory_files = os.listdir(first_path_directory)
-second_directory_files = os.listdir(second_path_directory)
+solve(first_path_directory, second_path_directory, similarity)
 
-for file1 in first_directory_files:
-    for file2 in second_directory_files:
-        path1 = first_path_directory + '/' + file1
-        path2 = second_path_directory + '/' + file2
-        cur_similarity = is_similarity(path1, path2)
-        if cur_similarity >= similarity:
-            print(f"Файлы {path1} и {path2} похожи с коэффициентом сходства {cur_similarity:.1f}%")
 
 
 

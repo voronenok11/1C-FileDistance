@@ -34,12 +34,19 @@ def is_similarity(file1, file2):
             lcs[0][j] = lcs[1][j]
             lcs[1][j] = 0
 
+    reader1.close()
+    reader2.close()
+
     return lcs[0][length2] * 100.0 / max(length1, length2) 
 
 
 def solve(first_path_directory, second_path_directory, similarity):
     first_directory_files = [first_path_directory + '/' + file for file in os.listdir(first_path_directory)]
     second_directory_files = [second_path_directory + '/' + file for file in os.listdir(second_path_directory)]
+
+
+    answer_file = open("answer.txt", "w")
+
 
     with Pool(20) as pool:
         res = pool.starmap(is_similarity, [
@@ -52,13 +59,13 @@ def solve(first_path_directory, second_path_directory, similarity):
         for ind2, file2 in enumerate(second_directory_files):
             cur_similarity = res[ind1 * len(second_directory_files) + ind2]
             if cur_similarity == 100.0:
-                print(f"Файлы {file1} и {file2} идентичны")
+                answer_file.write(f"Файлы {file1} и {file2} идентичны\n")
     
     for ind1, file1 in enumerate(first_directory_files):
         for ind2, file2 in enumerate(second_directory_files):
             cur_similarity = res[ind1 * len(second_directory_files) + ind2]
             if cur_similarity >= similarity:
-                print(f"Файлы {file1} и {file2} похожи с коэффициентом сходства {cur_similarity:.1f}%")
+                answer_file.write(f"Файлы {file1} и {file2} похожи с коэффициентом сходства {cur_similarity:.1f}%\n")
 
     for ind1, file1 in enumerate(first_directory_files):
         in_another_directory = False
@@ -68,7 +75,7 @@ def solve(first_path_directory, second_path_directory, similarity):
                 in_another_directory = True
 
         if not in_another_directory:
-            print(f"Файл {file1} есть в первой директории, но нет во второй")
+            answer_file.write(f"Файл {file1} есть в первой директории, но нет во второй\n")
         
     for ind2, file2 in enumerate(second_directory_files):
         in_another_directory = False
@@ -78,7 +85,10 @@ def solve(first_path_directory, second_path_directory, similarity):
                 in_another_directory = True
 
         if not in_another_directory:
-            print(f"Файл {file2} есть во второй директории, но нет в первой")
+            answer_file.write(f"Файл {file2} есть во второй директории, но нет в первой\n")
+
+
+    answer_file.close()
 
 
 

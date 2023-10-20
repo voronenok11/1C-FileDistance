@@ -47,12 +47,38 @@ def solve(first_path_directory, second_path_directory, similarity):
             for file1 in first_directory_files
             for file2 in second_directory_files
         ]) 
+
+    for ind1, file1 in enumerate(first_directory_files):
+        for ind2, file2 in enumerate(second_directory_files):
+            cur_similarity = res[ind1 * len(second_directory_files) + ind2]
+            if cur_similarity == 100.0:
+                print(f"Файлы {file1} и {file2} идентичны")
     
     for ind1, file1 in enumerate(first_directory_files):
         for ind2, file2 in enumerate(second_directory_files):
             cur_similarity = res[ind1 * len(second_directory_files) + ind2]
             if cur_similarity >= similarity:
                 print(f"Файлы {file1} и {file2} похожи с коэффициентом сходства {cur_similarity:.1f}%")
+
+    for ind1, file1 in enumerate(first_directory_files):
+        in_another_directory = False
+        for ind2, file2 in enumerate(second_directory_files):
+            cur_similarity = res[ind1 * len(second_directory_files) + ind2]
+            if cur_similarity >= similarity:
+                in_another_directory = True
+
+        if not in_another_directory:
+            print(f"Файл {file1} есть в первой директории, но нет во второй")
+        
+    for ind2, file2 in enumerate(second_directory_files):
+        in_another_directory = False
+        for ind1, file1 in enumerate(first_directory_files):
+            cur_similarity = res[ind1 * len(second_directory_files) + ind2]
+            if cur_similarity >= similarity:
+                in_another_directory = True
+
+        if not in_another_directory:
+            print(f"Файл {file2} есть во второй директории, но нет в первой")
 
 
 
